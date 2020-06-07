@@ -1,0 +1,53 @@
+﻿@page "/ingredients"
+@inject IIngredientsRepository _ingredientsReposirtory;
+
+<h1>Ingredients</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th><span class="oi oi-bell" aria-hidden="true"></span> Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ingredient in IngredientList)
+        {
+            <tr>
+                <td>@ingredient.Name</td>
+                <td>@ingredient.Category</td>
+                <td><button @onclick="@(async (e) => await DeleteIngredientAsync(ingredient))">❌</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<input placeholder="Ingredient Name" @bind="newIngredientName" />
+<input placeholder="Ingredient Category" @bind="newIngredientCategory" />
+<button @onclick="NewIngredientAsync">Create</button>
+
+@code {
+    private IList<Ingredient> IngredientList = new List<Ingredient>();
+    private string newIngredientName;
+    private string newIngredientCategory;
+    protected override async Task OnInitializedAsync()
+    {
+        IngredientList = await _ingredientsReposirtory.GetIngredientsAsync();
+    }
+
+    private async Task NewIngredientAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(newIngredientName) && !string.IsNullOrWhiteSpace(newIngredientCategory))
+        {
+            await _ingredientsReposirtory.AddIngredientAsync(newIngredientName, newIngredientCategory);
+            newIngredientName = string.Empty; //We need to reset this string, otherwise the text box will still contain the value typed in.
+            newIngredientCategory = string.Empty; //We need to reset this string, otherwise the text box will still contain the value typed in.
+        }
+    }
+
+    private async Task DeleteIngredientAsync(Ingredient ingredient)
+    {
+        await _ingredientsReposirtory.DeleteIngredientAsync(ingredient);
+    }
+}
